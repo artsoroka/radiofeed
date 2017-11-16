@@ -1,26 +1,27 @@
-const shows         = require('./lib/db/shows'); 
-const subscribtions = require('./lib/db/subscribtions'); 
-const getPageBody   = require('./lib/getPageBody'); 
-const getShowsList  = require('./lib/getShowsList'); 
-const getAudioLinks = require('./lib/getAudioLinks'); 
-const includes      = require('lodash/includes'); 
-const last          = require('lodash/last'); 
-const config        = require('./config'); 
+const Shows         = require('./lib/db/shows'); 
+const Subscribtions = require('./lib/db/subscribtions'); 
+const isEmpty       = require('lodash/isEmpty'); 
+const checkUpdates  = require('./lib/checkNewEpisodes'); 
 
 (async () => {
   try{
-    var links = []; 
-    const showsPage = await getPageBody(config.urls.showsListUrl); 
-    const shows     = getShowsList(showsPage);   
-    const favorite  = await subscribtions.list(); 
+    let links = []; 
+    const subscribed = await Subscribtions.list(); 
+    const shows      = await Shows.getShows({id: {$in: subscribed} }); 
     
-    for(let show of shows.filter(s => includes(favorite, s.id))){
-      console.log('Cheking ' + show.id + '... '); 
-      const html = await getPageBody(config.urls.base + show.url); 
-      const audioFiles = getAudioLinks(html).filter(link => {
-        return last(link.split('/')).match(show.id); 
-      }); 
-      links = links.concat(audioFiles); 
+    for(let show of shows){
+      console.log(`Cheking ${show.id}...`); 
+      const newEpisodes = await checkUpdates(show); 
+      
+      if( isEmpty(newEpisodes) ){
+        console.log(`No new episodes of ${show.id} found`); 
+        continue; 
+      }
+      
+      console.log(`New episodes of ${show.id} found`); 
+      links = links.concat(newEpisodes); 
+      await Shows.addNewEpisodes(show, newEpisodes); 
+
     }
     
     console.log(links); 

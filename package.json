@@ -1,6 +1,6 @@
 {
-  "name": "echo-parser",
-  "version": "1.0.0",
+  "name": "radiofeed",
+  "version": "0.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -12,6 +12,7 @@
   "dependencies": {
     "bluebird": "^3.5.1",
     "cheerio": "^1.0.0-rc.2",
+    "lodash": "^4.17.4",
     "nedb": "^1.8.0",
     "request": "^2.83.0"
   }
