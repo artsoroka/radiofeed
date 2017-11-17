@@ -1,7 +1,9 @@
 const Shows         = require('./lib/db/shows'); 
 const Subscribtions = require('./lib/db/subscribtions'); 
+const Downloads     = require('./lib/db/downloads'); 
 const isEmpty       = require('lodash/isEmpty'); 
 const checkUpdates  = require('./lib/checkNewEpisodes'); 
+const download      = require('./lib/download'); 
 
 (async () => {
   try{
@@ -19,12 +21,29 @@ const checkUpdates  = require('./lib/checkNewEpisodes');
       }
       
       console.log(`New episodes of ${show.id} found`); 
-      links = links.concat(newEpisodes); 
+      const downloads = newEpisodes.map(episode => {
+        return {
+          show: {
+            title: show.title,
+            id: show.id
+          }, 
+          url: episode
+        }; 
+      }); 
+      links = links.concat(downloads); 
       await Shows.addNewEpisodes(show, newEpisodes); 
 
     }
     
     console.log(links); 
+    
+    for(let link of links){
+      const file = await download(link.url); 
+      await Downloads.addFile({
+        file: file, 
+        show: link.show
+      }); 
+    }
     
   } catch(e){
     console.log('Error: ', e); 
