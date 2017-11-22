@@ -31,4 +31,8 @@ getPageBody(config.urls.showsListUrl)
   .then(links => {
     assert.equal(isEmpty(links), false, 'could not find audio links'); 
     console.log('Ok'); 
+  })
+  .catch(err => {
+      console.log('Failed with error %s', err); 
+      process.exit(1); 
   }); 
