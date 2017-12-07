@@ -1,0 +1,8 @@
+version: '2'
+services:
+  app:
+    build: .
+    env_file: .env
+    volumes: 
+      - './vol/downloads:/usr/src/radiofeed/downloads' 
+      - './vol/db:/usr/src/radiofeed/db'
